@@ -14,6 +14,7 @@
   <depend>rospy</depend>
   <depend>sensor_msgs</depend>
   <depend>project11</depend>
+  <depend>dynamic_reconfigure</depend>
 
   <export>
   </export>

@@ -10,6 +10,15 @@ from geographic_msgs.msg import GeoPointStamped
 from sensor_msgs.msg import NavSatFix
 from std_msgs.msg import String
 
+from axis_tracker.cfg import axis_trackerConfig
+
+from dynamic_reconfigure.server import Server
+from marine_traffic_com.cfg import marine_traffic_comConfig
+
+zoom_level = 1.0
+tilt_nudge = 0.0
+heading_nudge = 0.0
+
 basePosition = None
 mode = 'look_at_target'
 
@@ -54,8 +63,17 @@ def doLookAt(lat,lon):
         else:
             tilt = 0.0
 
-        camera.ptz.goto(azimuth_degs,tilt,4.0)
+        camera.ptz.goto(azimuth_degs+heading_nudge,tilt+tilt_nudge,zoom_level,50)
     
+def reconfigure_callback(config, level):
+    global zoom_level
+    global tilt_nudge
+    global heading_nudge
+    zoom_level = config['zoom']
+    tilt_nudge = config['tilt_nudge']
+    heading_nudge = config['heading_nudge']
+    return config
+
 
 rospy.init_node('axis_tracker')
 
@@ -77,4 +95,8 @@ rospy.Subscriber('/base/camera/look_at', GeoPoint, lookAtCallback)
 rospy.Subscriber('/base/camera/look_at_mode', String, modeCallback)
 
 rospy.Subscriber('/udp/position', GeoPointStamped, vehiclePositionCallback)
+
+config_server = Server(axis_trackerConfig, reconfigure_callback)
+
+
 rospy.spin()

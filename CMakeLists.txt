@@ -9,9 +9,14 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   project11
   rospy
+  dynamic_reconfigure
 )
 
 catkin_python_setup()
+
+generate_dynamic_reconfigure_options(
+    cfg/axis_tracker.cfg
+)
 
 catkin_package(
 #  INCLUDE_DIRS include
