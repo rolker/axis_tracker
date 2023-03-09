@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import urllib2
+import urllib.request
 import time
 import datetime
 import math
@@ -9,13 +9,14 @@ import calendar
 class Axis:
     def __init__(self,server,uname=None,pwd=None):
         if uname is not None and pwd is not None:
-            pwd_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
-            pwd_manager.add_password(None,server,uname,pwd)
+            pass
+            # pwd_manager = urllib2.HTTPPasswordMgrWithDefaultRealm()
+            # pwd_manager.add_password(None,server,uname,pwd)
 
-            auth_handler = urllib2.HTTPDigestAuthHandler(pwd_manager)
+            # auth_handler = urllib2.HTTPDigestAuthHandler(pwd_manager)
 
-            opener = urllib2.build_opener(auth_handler)
-            urllib2.install_opener(opener)
+            # opener = urllib2.build_opener(auth_handler)
+            # urllib2.install_opener(opener)
 
         self.params = Params(server)
         self.ptz = PTZ(server)
@@ -33,7 +34,7 @@ class APIGroup:
         else:
             p = '&'.join(params)
 
-        return urllib2.urlopen(self.server+self.cmd_path+p)
+        return urllib.request.urlopen(self.server+self.cmd_path+p)
         try:
             return urllib2.urlopen(self.server+self.cmd_path+p)
         except:
@@ -98,6 +99,7 @@ class Position:
         self.ptz = ptz
 
         for l in lines:
+            l = l.decode('utf-8')
             parts = l.split('=',1)
             if parts[0] == 'pan':
                 self.pan = float(parts[1])
@@ -143,7 +145,11 @@ class PTZ(APIGroup):
         self.maxZoomCoord = 9999
 
         if server is not None:
-            self.getPosition()
+            print(self.getPosition())
+            limits = self.cmd('query=limits')
+            for l in limits.read().decode('utf-8').split():
+                print(l)
+
 
 
     def info(self):
@@ -279,3 +285,5 @@ class PTZ(APIGroup):
         k,v = self.cmd('query=speed').read().split('=',1)
         return self.valueToSpeed(int(v))
         
+    def center(self, x, y):
+        return self.cmd("center="+str(int(x))+','+str(int(y))).read()

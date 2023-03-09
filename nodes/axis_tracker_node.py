@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
 import axis_tracker.axis
@@ -13,7 +13,6 @@ from std_msgs.msg import String
 from axis_tracker.cfg import axis_trackerConfig
 
 from dynamic_reconfigure.server import Server
-from marine_traffic_com.cfg import marine_traffic_comConfig
 
 zoom_level = 1.0
 tilt_nudge = 0.0
@@ -27,7 +26,7 @@ vehiclePositionBuffer = None
 def modeCallback(data):
     global mode
     mode = data.data
-    print data
+    print (data)
 
 def basePositionCallback(data):
     global basePosition
@@ -45,7 +44,7 @@ def vehiclePositionCallback(data):
 
     vehiclePositionBuffer = (data.position.latitude*.5 + vehiclePositionBuffer[0]*.5, data.position.longitude*0.5 + vehiclePositionBuffer[1]*.5)
     if mode == 'follow_vehicle':
-        print vehiclePositionBuffer
+        print (vehiclePositionBuffer)
         doLookAt(vehiclePositionBuffer[0],vehiclePositionBuffer[1])
 
 def doLookAt(lat,lon):
@@ -77,24 +76,14 @@ def reconfigure_callback(config, level):
 
 rospy.init_node('axis_tracker')
 
-axis_url = rospy.get_param('/base/camera/url')
-axis_username = rospy.get_param('/base/camera/username')
-axis_password = rospy.get_param('/base/camera/password')
+axis_url = rospy.get_param('~url')
+#axis_username = rospy.get_param('/base/camera/username')
+#axis_password = rospy.get_param('/base/camera/password')
 
-camera = axis_tracker.axis.Axis(axis_url,axis_username,axis_password)
+camera = axis_tracker.axis.Axis(axis_url)
 
-b_lat = rospy.get_param('/base/latitude', None)
-b_long = rospy.get_param('/base/longitude', None)
-if b_lat is not None and b_long is not None:
-    basePosition = (b_lat, b_long)
-    
-camera_height = rospy.get_param('/base/camera/height',0.0)
-
-rospy.Subscriber('/base/position', NavSatFix, basePositionCallback)
 rospy.Subscriber('/base/camera/look_at', GeoPoint, lookAtCallback)
 rospy.Subscriber('/base/camera/look_at_mode', String, modeCallback)
-
-rospy.Subscriber('/udp/position', GeoPointStamped, vehiclePositionCallback)
 
 config_server = Server(axis_trackerConfig, reconfigure_callback)
 
